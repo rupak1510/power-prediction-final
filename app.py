@@ -4,26 +4,12 @@ import pickle
 import pandas as pd
 import numpy as np
 import joblib
-import requests
-from io import BytesIO
+
 
 app = Flask(__name__)
 CORS(app)
-# Load  model
-def load_model_from_huggingface():
-    model_url = "https://huggingface.co/rupak15/power-prediction/resolve/main/random_forest_model_2.pkl"
-    try:
-        response = requests.get(model_url)
-        response.raise_for_status()  # Check for HTTP errors
-        model_data = BytesIO(response.content)
-        model = joblib.load(model_data)
-        print("Model type:", type(model))
-        return model
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        raise
-
-model = load_model_from_huggingface()
+model = joblib.load('Decision_tree_model.pkl')
+print("Model type:", type(model))
 
 # Area to one-hot encoding mapping
 area_columns = ['area_AEP', 'area_COMED', 'area_DAYTON', 'area_DEOK', 'area_DOM', 'area_DUQ']
@@ -50,15 +36,12 @@ def predict():
     date = data['date']  
     time = data['time']  
 
-    # Validate area
-    if area not in area_mapping:
-        return jsonify({'error': 'Invalid area'}), 400
 
-    # Combine date and time into a datetime string
+    # date and time 
     datetime_str = f"{date} {time}"
     dt = pd.to_datetime(datetime_str)
 
-    # Extract features as per training
+    # Ext features
     hours = dt.hour
     day = dt.day
     month = dt.month
@@ -72,9 +55,9 @@ def predict():
     # Order: area_AEP, area_COMED, area_DAYTON, area_DEOK, area_DOM, area_DUQ, hours, day, month, week, year
     input_data = [day, month,year, week, hours] +area_encoded
 
-    # Run prediction
+    #  pred
     try:
-        prediction = model.predict([input_data])[0]  # Assuming single value output
+        prediction = model.predict([input_data])[0] 
         return jsonify({'prediction': float(prediction)})
     except Exception as e:
         print("Error during prediction:", e)
