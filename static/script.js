@@ -6,7 +6,7 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
     const time = document.getElementById('time').value;
     
     try {
-        const response = await fetch('/predict', {
+        const response = await fetch('https://power-prediction-app.onrender.com/predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
